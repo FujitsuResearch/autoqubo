@@ -1,10 +1,14 @@
 import numpy as np
+from typing import Callable, Optional, Tuple
 
 
 class SamplingCompiler:
+    """
+    Provides .generate_qubo_matrix() method that allows to transform a function into a QUBO model.
+    """
 
     @staticmethod
-    def indices_iterator(input_size):
+    def _indices_iterator(input_size):
         yield tuple()
 
         for i in range(input_size):
@@ -15,35 +19,35 @@ class SamplingCompiler:
                 yield (i, j)
 
     @staticmethod
-    def new_training_sample(input_size, idx):
+    def _new_training_sample(input_size, idx):
         sample = [0] * input_size
         for i in idx:
             sample[i] = 1
         return sample
 
     @staticmethod
-    def get_training_samples(input_size):
-        return (SamplingCompiler.new_training_sample(input_size, idx)
-                for idx in SamplingCompiler.indices_iterator(input_size))
+    def _get_training_samples(input_size):
+        return (SamplingCompiler._new_training_sample(input_size, idx)
+                for idx in SamplingCompiler._indices_iterator(input_size))
 
     @staticmethod
-    def generate_training_output(fitness_function, input_size):
-        return (fitness_function(sample) for sample in SamplingCompiler.get_training_samples(input_size))
+    def _generate_training_output(fitness_function, input_size):
+        return (fitness_function(sample) for sample in SamplingCompiler._get_training_samples(input_size))
 
     @classmethod
-    def generate_qubo_coefficients(cls, fitness_function, input_size):
+    def _generate_qubo_coefficients(cls, fitness_function, input_size):
         coefficients = []
-        for output, index in zip(cls.generate_training_output(fitness_function, input_size),
-                                 cls.indices_iterator(input_size)):
+        for output, index in zip(cls._generate_training_output(fitness_function, input_size),
+                                 cls._indices_iterator(input_size)):
             coefficients.append(output - (0 if len(index) < 2 else sum(coefficients[i+1] for i in index)) -
                                 (0 if index == tuple() else coefficients[0]))
         return coefficients
 
     @staticmethod
-    def qubo_matrix(coefficients, input_size, dtype=np.float64):
+    def _qubo_matrix(coefficients, input_size, dtype=np.float64):
         qubo = np.zeros((input_size, input_size), dtype=dtype)
         k = 0
-        for idx in SamplingCompiler.indices_iterator(input_size):
+        for idx in SamplingCompiler._indices_iterator(input_size):
             if len(idx) == 1:
                 qubo[idx[0], idx[0]] = coefficients[k]
             if len(idx) == 2:
@@ -52,31 +56,25 @@ class SamplingCompiler:
         return qubo, coefficients[0]
 
     @classmethod
-    def generate_qubo_matrix(cls, fitness_function, input_size, searchspace=None):
+    def generate_qubo_matrix(cls,
+                             fitness_function: Callable,
+                             input_size: int,
+                             searchspace: Optional['SearchSpace'] = None) -> Tuple[np.array, int]:
+        """
+        Generates a QUBO matrix for a given function.
+        :param fitness_function: Callable
+            Function to be compiled.
+        :param input_size: int
+            number of binary variables in the function input.
+        :param searchspace: SearchSpace
+            Optional parameter describing the arguments of the funfion.
+        :return: Q, c
+            Q: QQUBO matrix
+            c: offset / constant term
+        """
         if searchspace is None:
-            return cls.qubo_matrix(cls.generate_qubo_coefficients(fitness_function, input_size), input_size)
+            return cls._qubo_matrix(cls._generate_qubo_coefficients(fitness_function, input_size), input_size)
         else:
-            return cls.qubo_matrix(cls.generate_qubo_coefficients(
+            return cls._qubo_matrix(cls._generate_qubo_coefficients(
                 searchspace.wrap_binary(fitness_function), input_size),
                                    input_size)
-
-
-if __name__ == '__main__':
-
-    def f(x):
-        return x[0]
-
-    def g(x):
-        return 1 + 2 * x[0] + 3 * x[1] + 4 * x[0] * x[1]
-
-    sc = SamplingCompiler()
-    c = SamplingCompiler.get_training_samples(1)
-    print(c)
-    print(list(c))
-    c = SamplingCompiler.generate_training_output(f, 1)
-    print(c)
-    print(list(c))
-    c = SamplingCompiler.generate_qubo_coefficients(f, 1)
-    print(c)
-    c = SamplingCompiler.generate_qubo_coefficients(g, 2)
-    print(c)

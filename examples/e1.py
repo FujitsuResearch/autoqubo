@@ -1,7 +1,4 @@
-from autoqubo.binarization import Binarization
-from autoqubo.sampling_compiler import SamplingCompiler
-from autoqubo.search_space import SearchSpace
-from autoqubo.utils import Utils
+from autoqubo import Binarization, SamplingCompiler, SearchSpace, Utils
 
 
 s = SearchSpace()
@@ -18,6 +15,9 @@ q, offset = SamplingCompiler.generate_qubo_matrix(ff, s.size, s)
 print(q)
 
 x = s.encode({'a': 3, 'b': 6})
+
+print(s.decode(x))
+print(s.decode_dict(x))
 
 print(Utils.energy(q, x, offset=offset))
 print(ff(3, 6))

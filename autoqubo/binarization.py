@@ -13,4 +13,9 @@ def uint_encode(value, binary_size):
 
 
 class Binarization:
+    """
+    Provides a namespace containing objects describing various types of decision variables that can be transformed into
+    binary.
+    Contains: `uint`.
+    """
     uint = Type(uint_decode, uint_encode)
