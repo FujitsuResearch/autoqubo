@@ -26,9 +26,33 @@ class SamplingCompiler:
         return sample
 
     @staticmethod
+    def _new_test_sample(input_size):
+        sample = np.random.randint(2, size=(input_size,)).tolist()
+        return sample
+
+    @staticmethod
     def _get_training_samples(input_size):
         return (SamplingCompiler._new_training_sample(input_size, idx)
                 for idx in SamplingCompiler._indices_iterator(input_size))
+
+    @staticmethod
+    def _get_test_samples(input_size, num_test_samples, training_samples):
+
+        # Compute maximum number of testing samples and adjust
+        space_size = 2**input_size
+        max_test_samples = space_size - len(training_samples)
+        if num_test_samples > max_test_samples:
+            print(f"*** Warning, requested test size is {num_test_samples}, which is larger than the maximum of {max_test_samples}")
+            num_test_samples = max_test_samples
+
+        # Compute the test samples
+        test_samples = []
+        while len(test_samples) < num_test_samples:
+            sample = SamplingCompiler._new_test_sample(input_size)
+            if sample not in training_samples:
+                test_samples.append(sample)
+
+        return test_samples
 
     @staticmethod
     def _generate_training_output(fitness_function, input_size):
@@ -78,3 +102,23 @@ class SamplingCompiler:
             return cls._qubo_matrix(cls._generate_qubo_coefficients(
                 searchspace.wrap_binary(fitness_function), input_size),
                                    input_size)
+
+    @classmethod
+    def test_qubo_matrix(cls,
+                         fitness_function: Callable,
+                         input_size: int,
+                         num_test_samples: int) -> bool:
+        """
+        Performs a test to see whether the qubification process was successful.
+        The process is not successful if the function is not quadratic
+        :param fitness_function: Callable
+            Function to be compiled.
+        :param input_size: int
+            number of binary variables in the function input.
+        :param num_test_samples: int
+            number of test points to use to test the correctness of the QUBO.
+        :return: bool
+            True if the test succeded (meaning function is quadratic, False if it failed(
+        """
+
+        pass
