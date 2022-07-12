@@ -12,7 +12,23 @@ can completely decouple the input and output representation.
   :align: center
   :alt: Overview of AutoQubo
 
-This repository acts as a companion to our GECCO publication: <insert link>
+This repository acts as a companion to our GECCO 2022 publication entitled
+**AutoQubo: Data-driven automatic QUBO generation** by Alberto Moraglio, Serban Georgescu and Przemyslaw Sadowski.
+which you can access at the following url:
+https://gecco-2022.sigevo.org/proceedings_2022/companion/companion_files/p2232-moraglio.pdf
+
+Give it a quick try
+-----------
+
+External hyperlinks,
+To quickly try and maybe tweak the examples provided in the paper we have prepared
+some Jupyter Notebooks that you can run using Google Colab.
+
+1. Max-Sat example `here
+<https://colab.research.google.com/github/FujitsuResearch/autoqubo/blob/feature%2Fadd-notebooks/examples/weighted_max_sat.ipynb>`_.
+
+
+
 
 How to cite
 -----------
