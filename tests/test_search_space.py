@@ -6,7 +6,7 @@ import unittest
 class TestSearchSpaceMethods(unittest.TestCase):
 
     def test_search_space(self):
-        s = SearchSpace([('a', Binarization.uint_decode, 3), ('b', Binarization.uint_decode, 3)])
+        s = SearchSpace([('a', Binarization.uint, 3), ('b', Binarization.uint, 3)])
         a, b = s.decode([1, 1, 0, 0, 1, 1])
         self.assertEqual(a, 3)
         self.assertEqual(b, 6)
