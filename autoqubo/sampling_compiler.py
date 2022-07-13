@@ -109,6 +109,7 @@ class SamplingCompiler:
     def test_qubo_matrix(cls,
                          fitness_function: Callable,
                          qubo_matrix: np.array,
+                         offset: float,
                          num_test_samples: int = -1,
                          epsilon: float = 1e-8) -> bool:
         """
@@ -118,6 +119,8 @@ class SamplingCompiler:
             Function to be compiled.
         :param qubo_matrix: np.array
             The QUBO being tested
+        :param offset: float
+            The constant term
         :param num_test_samples: int
             number of test points to use to test the correctness of the QUBO.
             If set to -1, will use n testing point
@@ -127,14 +130,14 @@ class SamplingCompiler:
             True if the test succeded (meaning function is quadratic, False if it failed(
         """
 
-        input_size = qubo_matrix[0].shape[0]
+        input_size = qubo_matrix.shape[0]
         num_test_samples = input_size if num_test_samples < 0 else num_test_samples
         training_samples = cls._get_training_samples(input_size)
         test_samples = cls._get_test_samples(input_size, num_test_samples, training_samples)
 
         for sample in test_samples:
             target = fitness_function(sample)
-            actual = np.r_[sample].dot(qubo_matrix[0]).dot(np.c_[sample]) + qubo_matrix[1]
+            actual = np.r_[sample].dot(qubo_matrix).dot(np.c_[sample]) + offset
             if abs(actual - target) > epsilon:
                 return False
 

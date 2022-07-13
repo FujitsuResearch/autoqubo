@@ -51,12 +51,12 @@ class TestSamplingCompilerMethods(unittest.TestCase):
     def test_test_qubo(self):
 
         # This should succeed because h is quadratic
-        qubo = SamplingCompiler.generate_qubo_matrix(fitness_function=h, input_size=3)
-        self.assertTrue(SamplingCompiler.test_qubo_matrix(fitness_function=h, qubo_matrix=qubo))
+        qubo, offset = SamplingCompiler.generate_qubo_matrix(fitness_function=h, input_size=3)
+        self.assertTrue(SamplingCompiler.test_qubo_matrix(fitness_function=h, qubo_matrix=qubo, offset=offset))
 
         # This should fail because hc is cubic
-        qubo = SamplingCompiler.generate_qubo_matrix(fitness_function=hc, input_size=3)
-        self.assertFalse(SamplingCompiler.test_qubo_matrix(fitness_function=hc, qubo_matrix=qubo))
+        qubo, offset = SamplingCompiler.generate_qubo_matrix(fitness_function=hc, input_size=3)
+        self.assertFalse(SamplingCompiler.test_qubo_matrix(fitness_function=hc, qubo_matrix=qubo, offset=offset))
 
 if __name__ == '__main__':
 
