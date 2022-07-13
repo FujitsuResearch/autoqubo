@@ -10,6 +10,11 @@ def f(x):
 def g(x):
     return 1 + 2*x[0] + 3*x[1] + 4*x[0]*x[1]
 
+def h(x):
+    return 1 + 3*x[1] + 1*x[0]*x[1] + 2*x[0]*x[2] + 12*x[1]*x[2]
+
+def hc(x):
+    return 1 + 3*x[1] + 1*x[0]*x[1]*x[2]
 
 class TestSamplingCompilerMethods(unittest.TestCase):
 
@@ -45,8 +50,13 @@ class TestSamplingCompilerMethods(unittest.TestCase):
 
     def test_test_qubo(self):
 
-        qubo = SamplingCompiler.generate_qubo_matrix(fitness_function=g, input_size=2)
-        success = SamplingCompiler.test_qubo_matrix(fitness_function=g, qubo_matrix=qubo, num_test_samples=2)
+        # This should succeed because h is quadratic
+        qubo = SamplingCompiler.generate_qubo_matrix(fitness_function=h, input_size=3)
+        self.assertTrue(SamplingCompiler.test_qubo_matrix(fitness_function=h, qubo_matrix=qubo))
+
+        # This should fail because hc is cubic
+        qubo = SamplingCompiler.generate_qubo_matrix(fitness_function=hc, input_size=3)
+        self.assertFalse(SamplingCompiler.test_qubo_matrix(fitness_function=hc, qubo_matrix=qubo))
 
 if __name__ == '__main__':
 
