@@ -38,9 +38,11 @@ class SamplingCompiler:
     @staticmethod
     def _get_test_samples(input_size, num_test_samples, training_samples):
 
+        training_samples = list(training_samples)
+
         # Compute maximum number of testing samples and adjust
         space_size = 2**input_size
-        max_test_samples = space_size - len(training_samples)
+        max_test_samples = space_size - len(list(training_samples))
         if num_test_samples > max_test_samples:
             print(f"*** Warning, requested test size is {num_test_samples}, which is larger than the maximum of {max_test_samples}")
             num_test_samples = max_test_samples
@@ -107,7 +109,8 @@ class SamplingCompiler:
     def test_qubo_matrix(cls,
                          fitness_function: Callable,
                          qubo_matrix: np.array,
-                         num_test_samples: int) -> bool:
+                         num_test_samples: int = -1,
+                         epsilon: float = 1e-8) -> bool:
         """
         Performs a test to see whether the qubification process was successful.
         The process is not successful if the function is not quadratic
@@ -117,16 +120,22 @@ class SamplingCompiler:
             The QUBO being tested
         :param num_test_samples: int
             number of test points to use to test the correctness of the QUBO.
+            If set to -1, will use n testing point
+        :param epsilon: float
+            precision of comparison between function value and qubo value
         :return: bool
             True if the test succeded (meaning function is quadratic, False if it failed(
         """
 
         input_size = qubo_matrix[0].shape[0]
+        num_test_samples = input_size if num_test_samples < 0 else num_test_samples
         training_samples = cls._get_training_samples(input_size)
-        #test_samples = cls._get_test_samples(input_size, num_test_samples, training_samples)
+        test_samples = cls._get_test_samples(input_size, num_test_samples, training_samples)
 
-        for sample in training_samples:
+        for sample in test_samples:
             target = fitness_function(sample)
-            actual = qubo_matrix[0].T*np.c_[sample]*qubo_matrix[0]
-            diff = target - actual
-        pass
+            actual = np.r_[sample].dot(qubo_matrix[0]).dot(np.c_[sample]) + qubo_matrix[1]
+            if abs(actual - target) > epsilon:
+                return False
+
+        return True
