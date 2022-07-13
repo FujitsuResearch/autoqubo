@@ -106,19 +106,27 @@ class SamplingCompiler:
     @classmethod
     def test_qubo_matrix(cls,
                          fitness_function: Callable,
-                         input_size: int,
+                         qubo_matrix: np.array,
                          num_test_samples: int) -> bool:
         """
         Performs a test to see whether the qubification process was successful.
         The process is not successful if the function is not quadratic
         :param fitness_function: Callable
             Function to be compiled.
-        :param input_size: int
-            number of binary variables in the function input.
+        :param qubo_matrix: np.array
+            The QUBO being tested
         :param num_test_samples: int
             number of test points to use to test the correctness of the QUBO.
         :return: bool
             True if the test succeded (meaning function is quadratic, False if it failed(
         """
 
+        input_size = qubo_matrix[0].shape[0]
+        training_samples = cls._get_training_samples(input_size)
+        #test_samples = cls._get_test_samples(input_size, num_test_samples, training_samples)
+
+        for sample in training_samples:
+            target = fitness_function(sample)
+            actual = qubo_matrix[0].T*np.c_[sample]*qubo_matrix[0]
+            diff = target - actual
         pass

@@ -34,6 +34,19 @@ class TestSamplingCompilerMethods(unittest.TestCase):
             (SamplingCompiler.generate_qubo_matrix(g, 2)[0] == np.array([[2, 4], [0, 3]])).all()
         )
 
+    def test_test_set(self):
+        input_size = 3
+        num_test_samples = 2
+
+        training_samples = list(SamplingCompiler._get_training_samples(input_size))
+        test_samples = list(SamplingCompiler._get_test_samples(input_size, num_test_samples, training_samples))
+        self.assertEqual(len(test_samples), 1)
+        self.assertEqual(test_samples, [[1,1,1]])
+
+    def test_test_qubo(self):
+
+        qubo = SamplingCompiler.generate_qubo_matrix(fitness_function=g, input_size=2)
+        success = SamplingCompiler.test_qubo_matrix(fitness_function=g, qubo_matrix=qubo, num_test_samples=2)
 
 if __name__ == '__main__':
 
