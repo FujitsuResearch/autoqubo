@@ -43,8 +43,7 @@ class TestSamplingCompilerMethods(unittest.TestCase):
         input_size = 3
         num_test_samples = 2
 
-        training_samples = list(SamplingCompiler._get_training_samples(input_size))
-        test_samples = list(SamplingCompiler._get_test_samples(input_size, num_test_samples, training_samples))
+        test_samples = list(SamplingCompiler._get_test_samples(input_size, num_test_samples))
         self.assertEqual(len(test_samples), 1)
         self.assertEqual(test_samples, [[1,1,1]])
 

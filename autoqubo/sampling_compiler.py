@@ -36,13 +36,10 @@ class SamplingCompiler:
                 for idx in SamplingCompiler._indices_iterator(input_size))
 
     @staticmethod
-    def _get_test_samples(input_size, num_test_samples, training_samples):
-
-        training_samples = list(training_samples)
+    def _get_test_samples(input_size, num_test_samples):
 
         # Compute maximum number of testing samples and adjust
-        space_size = 2**input_size
-        max_test_samples = space_size - len(list(training_samples))
+        max_test_samples = 2**input_size - (1 + input_size*(input_size+1) // 2)
         if num_test_samples > max_test_samples:
             print(f"*** Warning, requested test size is {num_test_samples}, which is larger than the maximum of {max_test_samples}")
             num_test_samples = max_test_samples
@@ -51,7 +48,9 @@ class SamplingCompiler:
         test_samples = []
         while len(test_samples) < num_test_samples:
             sample = SamplingCompiler._new_test_sample(input_size)
-            if sample not in training_samples:
+            # We know that the training set contains 0-hot, 1-hot and 2-hot examples.
+            # Hence all samples with at least 3 ones cannot be in the training set
+            if sum(sample) > 2:
                 test_samples.append(sample)
 
         return test_samples
@@ -132,8 +131,7 @@ class SamplingCompiler:
 
         input_size = qubo_matrix.shape[0]
         num_test_samples = input_size if num_test_samples < 0 else num_test_samples
-        training_samples = cls._get_training_samples(input_size)
-        test_samples = cls._get_test_samples(input_size, num_test_samples, training_samples)
+        test_samples = cls._get_test_samples(input_size, num_test_samples)
 
         for sample in test_samples:
             target = fitness_function(sample)
