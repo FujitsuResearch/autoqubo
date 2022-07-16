@@ -62,7 +62,10 @@ if __name__ == '__main__':
     s.add('x', weights_vector, 3 * 3)
 
     qubo, offset = SamplingCompiler.generate_qubo_matrix(f, s.size, s)
-    # TODO Add QUBO testing after the function is updated
+    if SamplingCompiler.test_qubo_matrix(f, qubo, offset, search_space=s):
+        print("QUBO generation successful")
+    else:
+        print("QUBO generation failed - the objective function is not quadratic")
 
     print("QUBO matrix:")
     print(qubo)

@@ -27,7 +27,7 @@ class SamplingCompiler:
 
     @staticmethod
     def _new_test_sample(input_size):
-        sample = np.random.randint(2, size=(input_size,)).tolist()
+        sample = tuple(np.random.randint(2, size=(input_size,)))
         return sample
 
     @staticmethod
@@ -45,13 +45,13 @@ class SamplingCompiler:
             num_test_samples = max_test_samples
 
         # Compute the test samples
-        test_samples = []
+        test_samples = set()
         while len(test_samples) < num_test_samples:
             sample = SamplingCompiler._new_test_sample(input_size)
             # We know that the training set contains 0-hot, 1-hot and 2-hot examples.
             # Hence all samples with at least 3 ones cannot be in the training set
             if sum(sample) > 2:
-                test_samples.append(sample)
+                test_samples.add(sample)
 
         return test_samples
 
@@ -92,9 +92,9 @@ class SamplingCompiler:
         :param input_size: int
             number of binary variables in the function input.
         :param searchspace: SearchSpace
-            Optional parameter describing the arguments of the funfion.
+            Optional parameter describing the arguments of the function.
         :return: Q, c
-            Q: QQUBO matrix
+            Q: QUBO matrix
             c: offset / constant term
         """
         if searchspace is None:
@@ -109,6 +109,7 @@ class SamplingCompiler:
                          fitness_function: Callable,
                          qubo_matrix: np.array,
                          offset: float,
+                         search_space: Optional['SearchSpace'] = None,
                          num_test_samples: int = -1,
                          epsilon: float = 1e-8) -> bool:
         """
@@ -120,22 +121,29 @@ class SamplingCompiler:
             The QUBO being tested
         :param offset: float
             The constant term
+        :param search_space: Optional['SearchSpace']
+            Optional parameter describing the arguments of the function.
         :param num_test_samples: int
             number of test points to use to test the correctness of the QUBO.
             If set to -1, will use n testing point
         :param epsilon: float
             precision of comparison between function value and qubo value
         :return: bool
-            True if the test succeded (meaning function is quadratic, False if it failed(
+            True if the test succeeded (meaning function is quadratic, False if it failed(
         """
+
+        if search_space is None:
+            binary_func = fitness_function
+        else:
+            binary_func = search_space.wrap_binary(fitness_function)
 
         input_size = qubo_matrix.shape[0]
         num_test_samples = input_size if num_test_samples < 0 else num_test_samples
         test_samples = cls._get_test_samples(input_size, num_test_samples)
 
         for sample in test_samples:
-            target = fitness_function(sample)
-            actual = np.r_[sample].dot(qubo_matrix).dot(np.c_[sample]) + offset
+            target = binary_func(sample)
+            actual = sample @ qubo_matrix @ sample + offset
             if abs(actual - target) > epsilon:
                 return False
 
