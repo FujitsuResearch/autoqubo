@@ -1,6 +1,5 @@
 from itertools import combinations
 
-
 # Number of vertices of the graph
 n = 10
 
@@ -53,23 +52,31 @@ A, B = 1, n+1
 
 
 # Unconstrained formulation (to minimize)
-def f(x):
+def f_quadratic(x):
     return -A*objective_function(x) + B*int(modified_constraint(x))
+
+def f_ho(x):
+    return -A*objective_function(x) + B*int(logical_constraint(x))
 
 
 if __name__ == '__main__':
     from itertools import product
     from autoqubo import SamplingCompiler, Utils
 
-    print("Sampling (10 examples):")
-    i = 0
-    for x in product(range(2), repeat=n):
-        i += 1
-        if i > 10:
-            break
-        print(f"x={x}, f(x)={f(x)}")
 
-    qubo, offset = SamplingCompiler.generate_qubo_matrix(f, n)
+    # Conversion fails if f is higher order
+    qubo, offset = SamplingCompiler.generate_qubo_matrix(f_ho, n)
+    if SamplingCompiler.test_qubo_matrix(f_ho, qubo, offset):
+        print("QUBO generation successful")
+    else:
+        print("QUBO generation failed - the objective function is not quadratic")
+
+    # Conversion works if using the smoothed, modified constrained
+    qubo, offset = SamplingCompiler.generate_qubo_matrix(f_quadratic, n)
+    if SamplingCompiler.test_qubo_matrix(f_quadratic, qubo, offset):
+        print("QUBO generation successful")
+    else:
+        print("QUBO generation failed - the objective function is not quadratic")
 
     print("QUBO matrix:")
     print(qubo)
