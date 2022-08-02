@@ -24,6 +24,10 @@ if __name__ == '__main__':
         print(f"x={x}, f(x)={f(x)}")
 
     qubo, offset = SamplingCompiler.generate_qubo_matrix(f, 3)
+    if SamplingCompiler.test_qubo_matrix(f, qubo, offset):
+        print("QUBO generation succesful")
+    else:
+        print("QUBO generation failed - the objective function is not quadratic")
 
     print("QUBO matrix:")
     print(qubo)
