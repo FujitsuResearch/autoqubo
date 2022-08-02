@@ -14,8 +14,7 @@ can completely decouple the input and output representation.
 
 This repository acts as a companion to our GECCO 2022 publication entitled
 **AutoQubo: Data-driven automatic QUBO generation** by Alberto Moraglio, Serban Georgescu and Przemyslaw Sadowski.
-which you can access at the following url:
-https://gecco-2022.sigevo.org/proceedings_2022/companion/companion_files/p2232-moraglio.pdf
+which you can access at the following url: https://dl.acm.org/doi/pdf/10.1145/3520304.3533965
 
 
 How to cite
