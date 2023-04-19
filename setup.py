@@ -4,7 +4,7 @@ import os
 
 NAME = 'autoqubo'
 INFO = '_package_info.py'
-README = 'README.rst'
+README = 'README.md'
 
 
 class PackageInfo(object):
