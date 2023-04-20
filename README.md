@@ -1,6 +1,6 @@
- # AutoQUBO
+ #  AUTOmated QUBO Generator
 
-AutoQUBO is an automatic tool for converting a high-level description
+ AUTOmated QUBO Generator is an automatic tool for converting a high-level description
 of an optimization problem, written in Python, into an equivalent QUBO representation.
 It is doing this by using a novel **data driven** translation method that
 can completely decouple the input and output representation.
