@@ -1,0 +1,21 @@
+name: autoqubo
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - dimod==0.10.17
+  - ipykernel
+  - black
+  - pylint
+  - numpy
+  - pandas
+  - pip
+  - python=3.7
+  - jupyter
+  - notebook
+  - pyjwt
+  - pyscipopt
+  - auth0-python
+  - pip:
+    - dwave-qbsolv==0.3.4
+    - sympy
