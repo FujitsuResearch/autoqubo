@@ -25,7 +25,7 @@ conda env create -f environment.yml
 ```
 activate it
 ```
-conda activate autoqubo_experiments
+conda activate autoqubo
 ```
 install autoqubo as package
 ```
