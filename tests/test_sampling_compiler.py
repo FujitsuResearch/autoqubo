@@ -45,7 +45,7 @@ class TestSamplingCompilerMethods(unittest.TestCase):
 
         test_samples = list(SamplingCompiler._get_test_samples(input_size, num_test_samples))
         self.assertEqual(len(test_samples), 1)
-        self.assertEqual(test_samples, [[1,1,1]])
+        self.assertEqual(test_samples, [(1,1,1)])
 
     def test_test_qubo(self):
 

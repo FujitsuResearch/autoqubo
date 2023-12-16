@@ -90,7 +90,7 @@ class SamplingCompiler:
                     fitness_function, input_size, use_multiprocessing=False
                 )
             samples = list(SamplingCompiler._get_training_samples(input_size))
-            with Pool(18) as pool:
+            with Pool() as pool:
                 results = pool.map(fitness_function, samples)
         return results
 
