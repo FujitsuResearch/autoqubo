@@ -1,4 +1,7 @@
 import numpy as np
+import sys
+import warnings
+from multiprocessing import Pool
 from typing import Callable, Optional, Tuple
 from typing_extensions import Literal
 from autoqubo.penalty_weights import generate_penalty
@@ -41,7 +44,6 @@ class SamplingCompiler:
 
     @staticmethod
     def _get_test_samples(input_size, num_test_samples):
-
         # Compute maximum number of testing samples and adjust
         max_test_samples = 2**input_size - (1 + input_size * (input_size + 1) // 2)
         if num_test_samples > max_test_samples:
@@ -62,17 +64,45 @@ class SamplingCompiler:
         return test_samples
 
     @staticmethod
-    def _generate_training_output(fitness_function, input_size):
-        return (
-            fitness_function(sample)
-            for sample in SamplingCompiler._get_training_samples(input_size)
-        )
+    def _generate_training_output(fitness_function, input_size, use_multiprocessing=True):
+        """
+        Gather and evaluate fitness function for training samples.
+
+        :param fitness_function: callable
+            The fitness function to be evaluated.
+        :param input_size: int
+            The size of the input for the fitness function.
+        :param use_multiprocessing: bool, optional
+            Flag to enable/disable multiprocessing for generating training output.
+        :return: list
+            List containing the fitness values for each training sample.
+        """
+        if use_multiprocessing is False:
+            results = (
+                fitness_function(sample)
+                for sample in SamplingCompiler._get_training_samples(input_size)
+            )
+        else:
+            if "ipykernel" in sys.modules:
+                msg = "Multiprocessing is enabled by default, but not available in interactive sessions such as jupyter notebooks. Sampling is done without multiprocessing."
+                warnings.warn(msg, UserWarning)
+                return SamplingCompiler._generate_training_output(
+                    fitness_function, input_size, use_multiprocessing=False
+                )
+            samples = list(SamplingCompiler._get_training_samples(input_size))
+            with Pool() as pool:
+                results = pool.map(fitness_function, samples)
+        return results
 
     @classmethod
-    def _generate_qubo_coefficients(cls, fitness_function, input_size):
+    def _generate_qubo_coefficients(
+        cls, fitness_function, input_size, use_multiprocessing = True
+    ):
         coefficients = []
         for output, index in zip(
-            cls._generate_training_output(fitness_function, input_size),
+            cls._generate_training_output(
+                fitness_function, input_size, use_multiprocessing
+            ),
             cls._indices_iterator(input_size),
         ):
             coefficients.append(
@@ -108,6 +138,7 @@ class SamplingCompiler:
         cls,
         fitness_function: Callable,
         input_size: int,
+        use_multiprocessing: bool = True,
         searchspace: Optional["SearchSpace"] = None,
     ) -> Tuple[np.array, int]:
         """
@@ -116,6 +147,8 @@ class SamplingCompiler:
             Function to be compiled.
         :param input_size: int
             number of binary variables in the function input.
+        :param use_multiprocessing: bool, optional
+            Flag to enable/disable multiprocessing for generating training output.
         :param searchspace: SearchSpace
             Optional parameter describing the arguments of the function.
         :return: Q, c
@@ -124,13 +157,17 @@ class SamplingCompiler:
         """
         if searchspace is None:
             return cls._qubo_matrix(
-                cls._generate_qubo_coefficients(fitness_function, input_size),
+                cls._generate_qubo_coefficients(
+                    fitness_function, input_size, use_multiprocessing
+                ),
                 input_size,
             )
         else:
             return cls._qubo_matrix(
                 cls._generate_qubo_coefficients(
-                    searchspace.wrap_binary(fitness_function), input_size
+                    searchspace.wrap_binary(fitness_function),
+                    input_size,
+                    use_multiprocessing,
                 ),
                 input_size,
             )
@@ -190,6 +227,7 @@ class SamplingCompiler:
         input_size: int,
         penalty_method: Optional[Literal["sum", "pnform", "verma_lewis"]] = "sum",
         penalty_weight: Optional[float] = None,
+        use_multiprocessing: bool = False,
         searchspace: Optional["SearchSpace"] = None,
     ) -> Tuple[np.array, int]:
         """
@@ -204,15 +242,19 @@ class SamplingCompiler:
             optional choice of how to generate penalty weight
         :param penalty_weight: int
             optional custom penalty weights
+        :param use_multiprocessing: bool, optional
+            Flag to enable/disable multiprocessing for generating training output.
         :param searchspace: SearchSpace
             Optional parameter describing the arguments of the function.
         :return: Q, c
             Q: QUBO matrixp cost
             c: offset / constant term
         """
-        cost_qubo, cost_offset = cls.generate_qubo_matrix(cost, input_size, searchspace)
+        cost_qubo, cost_offset = cls.generate_qubo_matrix(
+            cost, input_size, use_multiprocessing, searchspace
+        )
         constraint_qubo, constraint_offset = cls.generate_qubo_matrix(
-            constraints, input_size, searchspace
+            constraints, input_size, use_multiprocessing, searchspace
         )
         # only generate penalty weight if none is given
         if not penalty_weight:
