@@ -30,6 +30,7 @@ setup(
     version=package_info.__version__,
     description=package_info.__description__,
     long_description=open(README).read(),
+    long_description_content_type='text/markdown',
     author=package_info.__contact_names__,
     author_email=package_info.__contact_emails__,
     maintainer=package_info.__contact_names__,
