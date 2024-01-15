@@ -29,7 +29,7 @@ conda activate autoqubo
 ```
 install autoqubo as package
 ```
-pip install autoubo
+pip install autoqubo
 ```
 
 How to cite
