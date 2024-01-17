@@ -19,11 +19,15 @@ class PackageInfo(object):
 
 package_info = PackageInfo(os.path.join(NAME, INFO))
 
-install_requires = ['numpy>=1.14.0,<2.0.0']
+install_requires = [
+        'numpy>=1.14.0,<2.0.0',
+        'sympy',
+        'typing-extensions'
+]
 
 packages = [NAME]
 
-python_requires = '>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*'
+python_requires = '!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*'
 
 setup(
     name=package_info.__package_name__,
