@@ -19,15 +19,7 @@ This repository acts as a companion to our publications:
 Installation
 ------------
 
-create conda environment with all dependencies
-```
-conda env create -f environment.yml
-```
-activate it
-```
-conda activate autoqubo
-```
-install autoqubo as package
+install autoqubo as package:
 ```
 pip install autoqubo
 ```
